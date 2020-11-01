@@ -95,10 +95,25 @@ def main():
         pass
 
     with open('../template/haproxy.conf') as fin, open('../okd4_output/haproxy.conf','w+') as fout:
+        # Write bootstrap and masters
         fout.writelines(getlines(fin,'    mode tcp\n','    # bootstrap and masters go here\n'))
-        fout.write("    server      {} {} check\n".format(list(bootstrap.keys())[0], list(bootstrap.values())[0]))
+        fout.write("    server      {} {}:6443 check\n".format(list(bootstrap.keys())[0], list(bootstrap.values())[0]))
         for i in range(master_count):
-            fout.write("    server      {} {} check\n".format(list(masters.keys())[0], list(masters.values())[0]))
+            fout.write("    server      {} {}:6443 check\n".format(list(masters.keys())[0], list(masters.values())[0]))
+
+        fout.writelines(getlines(fin,'    mode tcp\n','    # bootstrap and masters go here\n'))
+        fout.write("    server      {} {}:22623 check\n".format(list(bootstrap.keys())[0], list(bootstrap.values())[0]))
+        for i in range(master_count):
+            fout.write("    server      {} {}:22623 check\n".format(list(masters.keys())[0], list(masters.values())[0]))
+
+        # Write the workers
+        fout.writelines(getlines(fin,'    mode tcp\n','    # computes go here\n'))
+        for i in range(worker_count):
+            fout.write("    server      {} {}:80 check\n".format(list(workers.keys())[i], list(workers.values())[i]))
+
+        fout.writelines(getlines(fin,'    mode tcp\n','    # computes go here\n'))
+        for i in range(worker_count):
+            fout.write("    server      {} {}:443 check\n".format(list(workers.keys())[i], list(workers.values())[i]))
         fout.writelines(fin)
     print("Done.")
 
