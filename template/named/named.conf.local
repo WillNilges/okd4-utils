@@ -1,0 +1,9 @@
+zone "okd.local" {
+    type master;
+    file "/etc/named/zones/db.okd.local"; # zone file path
+};
+
+zone "{subnet-reverse}.in-addr.arpa" {
+    type master;
+    file "/etc/named/zones/db.{subnet}";  # 192.168.1.0/24 subnet
+};

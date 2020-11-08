@@ -1,0 +1,31 @@
+$TTL    604800
+@       IN      SOA     okd4-services.{domain}. admin.{domain}. (
+                  1     ; Serial
+             604800     ; Refresh
+              86400     ; Retry
+            2419200     ; Expire
+             604800     ; Negative Cache TTL
+)
+
+; name servers - NS records
+    IN      NS      okd4-services
+
+; name servers - A records
+okd4-services.{domain}.          IN      A       {services-ip}
+
+; OpenShift Container Platform Cluster - A records
+okd4-bootstrap.{sub-domain}.{domain}.        IN      A      {bootstrap-ip}
+okd4-control-plane-{control-plane-index}.{sub-domain}.{domain}.        IN      A      {control-plane-ip}
+okd4-compute-{compute-index}.{sub-domain}.{domain}.        IN      A      {compute-ip}
+
+
+; OpenShift internal cluster IPs - A records
+api{sub-domain}.{domain}.    IN    A    {services-ip}
+api-int{sub-domain}.{domain}.    IN    A    {services-ip}
+*.apps{sub-domain}.{domain}.    IN    A    {services-ip}
+etcd-{control-plane-index}.{sub-domain}.{domain}.    IN    A     {control-plane-ip}
+console-openshift-console.apps.{sub-domain}.{domain}.     IN     A     {services-ip}
+oauth-openshift.apps.{sub-domain}.{domain}.     IN     A     {services-ip}
+
+; OpenShift internal cluster IPs - SRV records
+_etcd-server-ssl._tcp.{sub-domain}.{domain}.    86400     IN    SRV     0    10    2380    etcd-{control-plane-index}.{sub-domain}
