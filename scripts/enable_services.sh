@@ -14,11 +14,13 @@ if [ $UID -ne 0 ]; then
 fi
 
 dnf update -y
-dnf install -y git wget vim haproxy httpd bind bind-utils
-cd ~
+dnf install -y git wget vim nvim haproxy httpd bind bind-utils
+cd 
 cd okd4_files
 
 # TODO: Edit the named configs to work with your network.
+
+# Configure named
 
 mkdir /etc/named
 /bin/cp -f named.conf /etc/named.conf
@@ -36,9 +38,10 @@ nmcli connection modify ens18 ipv4.dns "127.0.0.1"
 systemctl restart NetworkManager
 
 # Hope that worked!
-dig okd.local
-dig –x 192.168.60.240
+dig postave.us
+dig -x 10.10.33.70
 
+# Configure HAProxy
 cp haproxy.cfg /etc/haproxy/haproxy.cfg
 
 setsebool -P haproxy_connect_any 1
@@ -52,6 +55,7 @@ firewall-cmd --permanent --add-service=http
 firewall-cmd --permanent --add-service=https
 firewall-cmd --reload
 
+# Configure httpd
 sed -i 's/Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
 
 setsebool -P httpd_read_user_content 1
@@ -62,31 +66,47 @@ firewall-cmd --reload
 
 curl localhost:8080
 
+# Install OKD 4.5
 cd
-wget https://github.com/openshift/okd/releases/download/4.5.0-0.okd-2020-07-29-070316/openshift-client-linux-4.5.0-0.okd-2020-07-29-070316.tar.gz
-wget https://github.com/openshift/okd/releases/download/4.5.0-0.okd-2020-07-29-070316/openshift-install-linux-4.5.0-0.okd-2020-07-29-070316.tar.gz
+# See https://github.com/openshift/okd/releases/ for the most up to date info.
+OKD_VERSION="4.5.0-0.okd-2020-10-15-235428"
+OKD_CLIENT_LINUX="https://github.com/openshift/okd/releases/download/$OKD_VERSION/openshift-client-linux-$OKD_VERSION.tar.gz"
+OKD_LINUX="https://github.com/openshift/okd/releases/download/$OKD_VERSION/openshift-install-linux-$OKD_VERSION.tar.gz"
 
-tar -zxvf openshift-client-linux-4.5.0-0.okd-2020-07-29-070316.tar.gz
-tar -zxvf openshift-install-linux-4.5.0-0.okd-2020-07-29-070316.tar.gz
+wget $OKD_CLIENT_LINUX
+wget $OKD_LINUX
+
+tar -zxvf openshift-client-linux-$OKD_VERSION.tar.gz
+tar -zxvf openshift-install-linux-$OKD_VERSION.tar.gz
 
 mv kubectl oc openshift-install /usr/local/bin/
 oc version
 openshift-install version
 
-ssh-keygen
+# Setup your install config
+ssh-keygen -t ed25519
 
 cd
 mkdir install_dir
-cp okd4_files/install-config.yaml ./install_dir
+cp okd4_files/install-config.yaml install_dir
 
-# TODO: sed pull secret
-echo "Go put your pull secret in ~/pull_secret. Press ENTER to continue."
-read
-cat pull_secret >> install_dir/install-config.yaml
-cat .ssh/id_rsa.pub >> install_dir/install-config.yaml
-vim ./install_dir/install-config.yaml # Fix whatever needs fixing.
-cp ./install_dir/install-config.yaml ./install_dir/install-config.yaml.bak
+# TODO: Get pull secret
+# cat pull_secret >> install_dir/install-config.yaml
+# cat .ssh/id_*.pub >> install_dir/install-config.yaml
+pullSecret_template='{\"auths\":{\"fake\":{\"auth\": \"bar\"}}}' 
+pullSecret=$(cat pull_secret)
+pubkey_template='ssh-ed25519\ AAAA...'
+pubkey="sshKey: "
+pubkey+=$(cat .ssh/id_ed25519.pub)
+sed -i "s/$pullSecret_template/$pullSecret/g" install_dir/install-config.yaml
+# sed -i "s/$pubkey_template/$pubkey/g" install_dir/install-config.yaml # Your mother is a whore
+sed -i '$ d' install_dir/install-config.yaml
+echo $pubkey >> install_dir/install-config.yaml
+# nvim install_dir/install-config.yaml # Fix whatever needs fixing.
+cp install_dir/install-config.yaml install_dir/install-config.yaml.bak
 
+
+# Create manifests and ignition configs.
 openshift-install create manifests --dir=install_dir/
 openshift-install create ignition-configs --dir=install_dir/
 
@@ -99,30 +119,38 @@ sudo chmod -R 755 /var/www/html/
 curl localhost:8080/okd4/metadata.json
 
 cd /var/www/html/okd4/
-sudo wget https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/32.20200715.3.0/x86_64/fedora-coreos-32.20200715.3.0-metal.x86_64.raw.xz
-sudo wget https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/32.20200715.3.0/x86_64/fedora-coreos-32.20200715.3.0-metal.x86_64.raw.xz.sig
-sudo mv fedora-coreos-32.20200715.3.0-metal.x86_64.raw.xz fcos.raw.xz
-sudo mv fedora-coreos-32.20200715.3.0-metal.x86_64.raw.xz.sig fcos.raw.xz.sig
+
+COREOS_VERSION="32.20201018.3.0"
+
+sudo wget https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/$COREOS_VERSION/x86_64/fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz
+sudo wget https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/$COREOS_VERSION/x86_64/fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz.sig
+
+sudo mv fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz fcos.raw.xz
+sudo mv fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz.sig fcos.raw.xz.sig
 sudo chown -R apache: /var/www/html/
 sudo chmod -R 755 /var/www/html/
 
-# Alright, go ignite your cluster. When you get to the API part, run this command:
-# oc patch etcd cluster -p='{"spec": {"unsupportedConfigOverrides": {"useUnsupportedUnsafeNonHANonProductionUnstableEtcd": true}}}' --type=merge
-# That allows the use of only one ctrl plane.
+echo "Press enter when ready to ignite your bootstrap"
+read
+sleep
+SERVICES=10.10.33.70
+NODE_TYPE=bootstrap # or master, or worker
+IGNITION=" coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://$SERVICES:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://$SERVICES:8080/okd4/$NODE_TYPE.ign"
 
-# Or, if you've got multiple, then here is what your ignition entries will look like:
-# that is, unless you're using a router or something smart like that.
+sleep 3
+ydotool type "$IGNITION"
 
-# Bootstrap
-#ip=10.10.3.37::10.10.3.1:255.255.255.0:::none nameserver=10.10.3.33 coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://10.10.3.33:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://10.10.3.33:8080/okd4/bootstrap.ign
+for i in 1 2 3:
+do
+    echo "Press enter when ready to ignite your master"
+    read
+    sleep 3
+    SERVICES=10.10.33.70
+    NODE_TYPE=master # or master, or worker
+    IGNITION=" coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://$SERVICES:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://$SERVICES:8080/okd4/$NODE_TYPE.ign"
 
-# Ctrl01
-#ip=10.10.3.34::10.10.3.1:255.255.255.0:::none nameserver=10.10.3.33 coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://10.10.3.33:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://10.10.3.33:8080/okd4/master.ign
-
-# Ctrl02
-#ip=10.10.3.35::10.10.3.1:255.255.255.0:::none nameserver=10.10.3.33 coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://10.10.3.33:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://10.10.3.33:8080/okd4/master.ign
-
-# Ctrl03
-#ip=10.10.3.36::10.10.3.1:255.255.255.0:::none nameserver=10.10.3.33 coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://10.10.3.33:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://10.10.3.33:8080/okd4/master.ign
+    sleep 3
+    ydotool type "$IGNITION"
+done
 
 exit 0
