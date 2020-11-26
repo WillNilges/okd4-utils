@@ -8,21 +8,19 @@ set -e
 
 # This is for single node clusters right now. Specifically, this is to be run on the services VM's root account.
 
-# If this ever fires, you need to re-evaluate your life choices.
 if [ $UID -ne 0 ]; then
     su root
 fi
 
 dnf update -y
-dnf install -y git wget vim nvim haproxy httpd bind bind-utils
+dnf install -y git wget vim neovim haproxy httpd bind bind-utils
 cd 
 cd okd4_files
 
 # TODO: Edit the named configs to work with your network.
 
 # Configure named
-
-mkdir /etc/named
+rm /etc/named; mkdir /etc/named
 /bin/cp -f named.conf /etc/named.conf
 /bin/cp -f named.conf.local /etc/named/
 mkdir /etc/named/zones
@@ -30,7 +28,7 @@ mkdir /etc/named/zones
 
 systemctl enable named
 systemctl start named
-systemctl status named
+#systemctl status named
 
 firewall-cmd --permanent --add-port=53/udp
 firewall-cmd --reload
@@ -42,12 +40,12 @@ dig postave.us
 dig -x 10.10.33.70
 
 # Configure HAProxy
-cp haproxy.cfg /etc/haproxy/haproxy.cfg
+/bin/cp -f haproxy.cfg /etc/haproxy/haproxy.cfg
 
 setsebool -P haproxy_connect_any 1
 systemctl enable haproxy
 systemctl start haproxy
-systemctl status haproxy
+#systemctl status haproxy
 
 firewall-cmd --permanent --add-port=6443/tcp
 firewall-cmd --permanent --add-port=22623/tcp
@@ -84,10 +82,10 @@ oc version
 openshift-install version
 
 # Setup your install config
-ssh-keygen -t ed25519
+#ssh-keygen -t ed25519
 
 cd
-mkdir install_dir
+rm -rf install_dir; mkdir install_dir
 cp okd4_files/install-config.yaml install_dir
 
 # TODO: Get pull secret
@@ -110,11 +108,11 @@ cp install_dir/install-config.yaml install_dir/install-config.yaml.bak
 openshift-install create manifests --dir=install_dir/
 openshift-install create ignition-configs --dir=install_dir/
 
-sudo mkdir /var/www/html/okd4
+rm -rf /var/www/html/okd4; mkdir /var/www/html/okd4
 
-sudo cp -R install_dir/* /var/www/html/okd4/
-sudo chown -R apache: /var/www/html/
-sudo chmod -R 755 /var/www/html/
+cp -R install_dir/* /var/www/html/okd4/
+chown -R apache: /var/www/html/
+chmod -R 755 /var/www/html/
 
 curl localhost:8080/okd4/metadata.json
 
@@ -130,27 +128,27 @@ sudo mv fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz.sig fcos.raw.xz.sig
 sudo chown -R apache: /var/www/html/
 sudo chmod -R 755 /var/www/html/
 
-echo "Press enter when ready to ignite your bootstrap"
-read
-sleep
-SERVICES=10.10.33.70
-NODE_TYPE=bootstrap # or master, or worker
-IGNITION=" coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://$SERVICES:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://$SERVICES:8080/okd4/$NODE_TYPE.ign"
+# echo "Press enter when ready to ignite your bootstrap"
+# read
+# sleep
+# SERVICES=10.10.33.70
+# NODE_TYPE=bootstrap # or master, or worker
+# IGNITION=" coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://$SERVICES:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://$SERVICES:8080/okd4/$NODE_TYPE.ign"
 
-sleep 3
-ydotool type "$IGNITION"
+# sleep 3
+# ydotool type "$IGNITION"
 
-for i in 1 2 3:
-do
-    echo "Press enter when ready to ignite your master"
-    read
-    sleep 3
-    SERVICES=10.10.33.70
-    NODE_TYPE=master # or master, or worker
-    IGNITION=" coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://$SERVICES:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://$SERVICES:8080/okd4/$NODE_TYPE.ign"
+# for i in 1 2 3:
+# do
+#     echo "Press enter when ready to ignite your master"
+#     read
+#     sleep 3
+#     SERVICES=10.10.33.70
+#     NODE_TYPE=master # or master, or worker
+#     IGNITION=" coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://$SERVICES:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://$SERVICES:8080/okd4/$NODE_TYPE.ign"
 
-    sleep 3
-    ydotool type "$IGNITION"
-done
+#     sleep 3
+#     ydotool type "$IGNITION"
+# done
 
 exit 0
