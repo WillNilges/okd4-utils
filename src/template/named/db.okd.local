@@ -15,17 +15,17 @@ okd4-services.{domain}.          IN      A       {services-ip}
 
 ; OpenShift Container Platform Cluster - A records
 okd4-bootstrap.{sub-domain}.{domain}.        IN      A      {bootstrap-ip}
-okd4-control-plane-{control-plane-index}.{sub-domain}.{domain}.        IN      A      {control-plane-ip}
-okd4-compute-{compute-index}.{sub-domain}.{domain}.        IN      A      {compute-ip}
+okd4-master-{master-index}.{sub-domain}.{domain}.        IN      A      {master-ip}
+okd4-worker-{worker-index}.{sub-domain}.{domain}.        IN      A      {worker-ip}
 
 
 ; OpenShift internal cluster IPs - A records
-api{sub-domain}.{domain}.    IN    A    {services-ip}
-api-int{sub-domain}.{domain}.    IN    A    {services-ip}
+api.{sub-domain}.{domain}.    IN    A    {services-ip}
+api-int.{sub-domain}.{domain}.    IN    A    {services-ip}
 *.apps{sub-domain}.{domain}.    IN    A    {services-ip}
-etcd-{control-plane-index}.{sub-domain}.{domain}.    IN    A     {control-plane-ip}
+etcd-{master-index}.{sub-domain}.{domain}.    IN    A     {master-ip}
 console-openshift-console.apps.{sub-domain}.{domain}.     IN     A     {services-ip}
 oauth-openshift.apps.{sub-domain}.{domain}.     IN     A     {services-ip}
 
 ; OpenShift internal cluster IPs - SRV records
-_etcd-server-ssl._tcp.{sub-domain}.{domain}.    86400     IN    SRV     0    10    2380    etcd-{control-plane-index}.{sub-domain}
+_etcd-server-ssl._tcp.{sub-domain}.{domain}.    86400     IN    SRV     0    10    2380    etcd-{master-index}.{sub-domain}

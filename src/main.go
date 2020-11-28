@@ -10,6 +10,10 @@ func main() {
 	var domain string
 	fmt.Print("\nEnter your domain name: ")
 	fmt.Scanln(&domain)
+
+	var cluster string
+	fmt.Print("\n\nEnter your cluster name: ")
+	fmt.Scanln(&cluster)
   
 	// Acquire network details of the service machine. Auto-detects devices and IP addresses.
 	fmt.Println("\n\nAcquiring service host networking information...")
@@ -64,4 +68,5 @@ func main() {
 	fmt.Println(workers)
 
 	haproxy_gen(bootstrap, masters, workers)
+	bind_gen(domain, cluster, service, bootstrap, masters, workers)
 }
