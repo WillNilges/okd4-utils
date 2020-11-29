@@ -15,7 +15,7 @@ $TTL    604800
 
 ; OpenShift Container Platform Cluster - PTR records
 {bootstrap-ip24}    IN    PTR    {bootstrap-name}.{sub-domain}.{domain}.
-{control-plane-ip24}    IN    PTR    {control-plane-name}.{sub-domain}.{domain}.
-{compute-ip24}    IN    PTR    {compute-name}.{sub-domain}.{domain}.
+{master-ip24}    IN    PTR    {master-name}.{sub-domain}.{domain}.
+{worker-ip24}    IN    PTR    {worker-name}.{sub-domain}.{domain}.
 {services-ip24}    IN    PTR    api.{sub-domain}.{domain}.
 {services-ip24}    IN    PTR    api-int.{sub-domain}.{domain}.

@@ -171,17 +171,19 @@ func haproxy_gen(bootstrap Host, masters []Host, workers []Host) {
 	}	
 }
 
-func bind_gen(domain string, cluster string, services Host, bootstrap Host, masters []Host, workers []Host) {
+func bind_gen_subdomain(domain string, cluster string, services Host, bootstrap Host, masters []Host, workers []Host) {
 	lines := open_file("template/named/db.okd.local")
 
 	// Fill out all the single-item stuff
 	for i,line := range lines {
 		mod_line_1 := strings.Replace(line, "{domain}", domain, -1)
 		mod_line_2 := strings.Replace(mod_line_1, "{sub-domain}", cluster, -1)
-		mod_line_3 := strings.Replace(mod_line_2, "{bootstrap-ip}", bootstrap.ipaddr, -1)
-		mod_line_4 := strings.Replace(mod_line_3, "{services-ip}", services.ipaddr, -1)
+		mod_line_3 := strings.Replace(mod_line_2, "okd4-bootstrap", bootstrap.hostname, -1)
+		mod_line_4 := strings.Replace(mod_line_3, "{bootstrap-ip}", bootstrap.ipaddr, -1)
+		mod_line_5 := strings.Replace(mod_line_4, "okd4-services", services.hostname, -1)
+		mod_line_6 := strings.Replace(mod_line_5, "{services-ip}", services.ipaddr, -1)
 		// fmt.Println(mod_line_4)
-		lines[i] = mod_line_4
+		lines[i] = mod_line_6
 	}
 
 	// Fill out the possible multitudes of masters
@@ -220,7 +222,55 @@ func bind_gen(domain string, cluster string, services Host, bootstrap Host, mast
 	}
 
 	os.MkdirAll("output", os.ModePerm)
-	write_file("output/db.okd.local", lines)
+	write_file(fmt.Sprintf("output/db.%s.%s", cluster, domain), lines)
+}
+
+func bind_gen_subnet(domain string, cluster string, services Host, bootstrap Host, masters []Host, workers []Host) {
+	lines := open_file("template/named/db.subnet")
+
+	// Fill out all the single-item stuff
+	for i,line := range lines {
+		mod_line_1 := strings.Replace(line, "{domain}", domain, -1)
+		mod_line_2 := strings.Replace(mod_line_1, "{sub-domain}", cluster, -1)
+		mod_line_3 := strings.Replace(mod_line_2, "{bootstrap-name}", bootstrap.hostname, -1)
+		mod_line_4 := strings.Replace(mod_line_3, "{bootstrap-ip}", bootstrap.ipaddr, -1)
+		mod_line_5 := strings.Replace(mod_line_4, "okd4-services", services.hostname, -1)
+		mod_line_6 := strings.Replace(mod_line_5, "{services-ip}", services.ipaddr, -1)
+		mod_line_7 := strings.Replace(mod_line_6, "{services-ip24}", strings.Split(services.ipaddr, ".")[3], -1)
+		mod_line_8 := strings.Replace(mod_line_7, "{bootstrap-ip24}", strings.Split(bootstrap.ipaddr, ".")[3], -1)
+		// fmt.Println(mod_line_4)
+		lines[i] = mod_line_8
+	}
+
+	// Fill out all the multiple stuff
+	for i,line := range lines {
+		// Fill out the possible multitudes of masters
+		if strings.Contains(line, "{master-ip24}") {
+			master_lines := []string{}
+			for _, master := range masters {
+				master_mod_1 := strings.Replace(line, "{master-name}", master.hostname, -1)
+				master_mod_2 := strings.Replace(master_mod_1, "{master-ip24}", strings.Split(master.ipaddr, ".")[3], -1)
+			master_lines = append(master_lines, master_mod_2)
+			}
+			lines[i] = strings.Join(master_lines, "\n")
+		}
+
+		// Fill out the possible multitudes of workers
+		if strings.Contains(line, "{worker-ip24}") {
+			worker_lines := []string{}
+			for _, worker := range workers {
+				worker_mod_1 := strings.Replace(line, "{worker-name}", worker.hostname, -1)
+				worker_mod_2 := strings.Replace(worker_mod_1, "{worker-ip24}", strings.Split(worker.ipaddr, ".")[3], -1)
+			worker_lines = append(worker_lines, worker_mod_2)
+			}
+			lines[i] = strings.Join(worker_lines, "\n")
+		}
+	}
+
+	os.MkdirAll("output", os.ModePerm)
+	services_ip_slice := strings.Split(services.ipaddr, ".")
+	subnet := strings.Join(services_ip_slice[0:3], ".")
+	write_file(fmt.Sprintf("output/db.%s", subnet), lines)
 }
 
 func open_file(path string) ([]string) {

@@ -68,5 +68,6 @@ func main() {
 	fmt.Println(workers)
 
 	haproxy_gen(bootstrap, masters, workers)
-	bind_gen(domain, cluster, service, bootstrap, masters, workers)
+	bind_gen_subdomain(domain, cluster, service, bootstrap, masters, workers)
+	bind_gen_subnet(domain, cluster, service, bootstrap, masters, workers)
 }
