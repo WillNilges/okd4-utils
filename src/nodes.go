@@ -273,6 +273,39 @@ func bind_gen_subnet(domain string, cluster string, services Host, bootstrap Hos
 	write_file(fmt.Sprintf("output/db.%s", subnet), lines)
 }
 
+func bind_named_conf_gen(services Host) {
+	lines := open_file("template/named/named.conf")
+
+	for i,line := range lines {
+		line_mod_1 := strings.Replace(line, "{services-ip}", services.ipaddr, -1)
+		line_mod_2 := strings.Replace(line_mod_1, "{subnet}", strings.Join(strings.Split(services.ipaddr, ".")[0:3], "."), -1)
+		lines[i] = line_mod_2
+	}
+
+	os.MkdirAll("output", os.ModePerm)
+	write_file("output/named.conf", lines)
+}
+
+func bind_named_conf_local_gen(domain string, services Host) {
+	lines := open_file("template/named/named.conf.local")
+	subnet_reverse_slice_1 := strings.Split(services.ipaddr, ".")[0:3]
+	subnet_reverse_slice_2 := []string{}
+	subnet_reverse_slice_2 = append(subnet_reverse_slice_2, subnet_reverse_slice_1[2])
+	subnet_reverse_slice_2 = append(subnet_reverse_slice_2, subnet_reverse_slice_1[1])
+	subnet_reverse_slice_2 = append(subnet_reverse_slice_2, subnet_reverse_slice_1[0])
+	subnet_reverse := strings.Join(subnet_reverse_slice_2, ".")
+
+	for i,line := range lines {
+		line_mod_1 := strings.Replace(line, "{domain}", domain, -1)
+		line_mod_2 := strings.Replace(line_mod_1, "{subnet}", strings.Join(strings.Split(services.ipaddr, ".")[0:3], "."), -1)
+		line_mod_3 := strings.Replace(line_mod_2, "{subnet-reverse}", subnet_reverse, -1)
+		lines[i] = line_mod_3
+	}
+
+	os.MkdirAll("output", os.ModePerm)
+	write_file("output/named.conf.local", lines)
+}
+
 func open_file(path string) ([]string) {
 	input, err := ioutil.ReadFile(path)
 	if err != nil {

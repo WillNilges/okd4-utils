@@ -5,5 +5,5 @@ zone "{domain}" {
 
 zone "{subnet-reverse}.in-addr.arpa" {
     type master;
-    file "/etc/named/zones/db.{subnet}";  # {subnet}/24 subnet
+    file "/etc/named/zones/db.{subnet}";  # {subnet}.0/24 subnet
 };

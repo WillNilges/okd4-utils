@@ -70,4 +70,6 @@ func main() {
 	haproxy_gen(bootstrap, masters, workers)
 	bind_gen_subdomain(domain, cluster, service, bootstrap, masters, workers)
 	bind_gen_subnet(domain, cluster, service, bootstrap, masters, workers)
+	bind_named_conf_gen(service)
+	bind_named_conf_local_gen(domain, service)
 }
