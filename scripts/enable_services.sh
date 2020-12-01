@@ -67,7 +67,7 @@ curl localhost:8080
 # Install OKD 4.5
 cd
 # See https://github.com/openshift/okd/releases/ for the most up to date info.
-OKD_VERSION="4.5.0-0.okd-2020-10-15-235428"
+OKD_VERSION="4.6.0-0.okd-2020-11-27-200126"
 OKD_CLIENT_LINUX="https://github.com/openshift/okd/releases/download/$OKD_VERSION/openshift-client-linux-$OKD_VERSION.tar.gz"
 OKD_LINUX="https://github.com/openshift/okd/releases/download/$OKD_VERSION/openshift-install-linux-$OKD_VERSION.tar.gz"
 
@@ -97,15 +97,14 @@ pubkey_template='ssh-ed25519\ AAAA...'
 pubkey="sshKey: "
 pubkey+=$(cat .ssh/id_ed25519.pub)
 sed -i "s/$pullSecret_template/$pullSecret/g" install_dir/install-config.yaml
-# sed -i "s/$pubkey_template/$pubkey/g" install_dir/install-config.yaml # Your mother is a whore
 sed -i '$ d' install_dir/install-config.yaml
 echo $pubkey >> install_dir/install-config.yaml
-# nvim install_dir/install-config.yaml # Fix whatever needs fixing.
 cp install_dir/install-config.yaml install_dir/install-config.yaml.bak
 
 
 # Create manifests and ignition configs.
 openshift-install create manifests --dir=install_dir/
+# sed -i 's/mastersSchedulable: true/mastersSchedulable: False/' install_dir/manifests/cluster-scheduler-02-config.yml # Make masters unschedulable (Don't use this if you don't have any workers.)
 openshift-install create ignition-configs --dir=install_dir/
 
 rm -rf /var/www/html/okd4; mkdir /var/www/html/okd4
@@ -127,28 +126,5 @@ sudo mv fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz fcos.raw.xz
 sudo mv fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz.sig fcos.raw.xz.sig
 sudo chown -R apache: /var/www/html/
 sudo chmod -R 755 /var/www/html/
-
-# echo "Press enter when ready to ignite your bootstrap"
-# read
-# sleep
-# SERVICES=10.10.33.70
-# NODE_TYPE=bootstrap # or master, or worker
-# IGNITION=" coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://$SERVICES:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://$SERVICES:8080/okd4/$NODE_TYPE.ign"
-
-# sleep 3
-# ydotool type "$IGNITION"
-
-# for i in 1 2 3:
-# do
-#     echo "Press enter when ready to ignite your master"
-#     read
-#     sleep 3
-#     SERVICES=10.10.33.70
-#     NODE_TYPE=master # or master, or worker
-#     IGNITION=" coreos.inst.install_dev=/dev/sda coreos.inst.image_url=http://$SERVICES:8080/okd4/fcos.raw.xz coreos.inst.ignition_url=http://$SERVICES:8080/okd4/$NODE_TYPE.ign"
-
-#     sleep 3
-#     ydotool type "$IGNITION"
-# done
 
 exit 0

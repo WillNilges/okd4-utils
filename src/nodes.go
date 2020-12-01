@@ -17,6 +17,8 @@ type Host struct {
 // Automatically detect the network devices and IP addresses of the host.
 // Interactively let the user choose which address to use.
 func choose_IP() (IP string, err error) {
+
+	// Detect interfaces and let the user pick which one they want.
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		fmt.Println(err)
@@ -37,6 +39,8 @@ func choose_IP() (IP string, err error) {
 			fmt.Println("Invalid input detected.")
 		}
 	}
+
+	// With their selection, detect IP addresses and let the user pick which one they want.
 	addrs, err := ifaces[option].Addrs()
 	if err != nil {
 		fmt.Println(err)
@@ -66,7 +70,7 @@ func get_hostname() (hostname string, err error) {
 	return os.Hostname()
 }
 
-// Wrapper function for acquiring hostname and IP address in a somewhat
+// Wrapper function for inputting hostname and IP address in a somewhat
 // elegant way.
 func node_details(node_count int) ([]Host){
 	nodes := []Host{}

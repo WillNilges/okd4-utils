@@ -3,6 +3,8 @@
 # Use ydotool to type in the ignition information. Screw doing that by hand!
 
 NODE_TYPE=bootstrap # bootstrap, or master, or worker
+NODE_TYPE=master
+NODE_TYPE=worker
 NODE_IP=10.10.33.76
 
 SERVICES=129.21.49.25
