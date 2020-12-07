@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "ARE YOU SURE YOU WANT TO DO THIS?"
+read
+
 set -e
 
 # Credits (Thanks, Craig)
