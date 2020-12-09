@@ -116,7 +116,7 @@ func input_ipaddr() (ipaddr string) {
 
 // Generate an haproxy config file.
 func haproxy_gen(bootstrap Host, masters []Host, workers []Host) {
-	input, err := ioutil.ReadFile("template/haproxy.conf")
+	input, err := ioutil.ReadFile("template/haproxy.cfg")
 	if err != nil {
 			fmt.Println(err)
 	}
@@ -169,7 +169,7 @@ func haproxy_gen(bootstrap Host, masters []Host, workers []Host) {
 	}
 	output := strings.Join(lines, "\n")
 	os.MkdirAll("output", os.ModePerm)
-	err = ioutil.WriteFile("output/haproxy.conf", []byte(output), 0644)
+	err = ioutil.WriteFile("output/haproxy.cfg", []byte(output), 0644)
 	if err != nil {
 		fmt.Println(err)
 	}	
