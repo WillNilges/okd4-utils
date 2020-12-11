@@ -14,62 +14,62 @@ func main() {
 	var cluster string
 	fmt.Print("\n\nEnter your cluster name: ")
 	fmt.Scanln(&cluster)
-  
+
 	// Acquire network details of the service machine. Auto-detects devices and IP addresses.
 	fmt.Println("\n\nAcquiring service host networking information...")
 
 	// Get service machine IP
-	service_ip, err := choose_IP()
+	serviceIP, err := chooseIP()
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	// Get service machine hostnames 
-	service_hostname, err := get_hostname()
+	// Get service machine hostnames
+	serviceHostname, err := getHostname()
 	if err != nil {
 		fmt.Println(err)
 	}
-	service := Host{ service_hostname, service_ip }
-	fmt.Println("Your service host is:\n",service.hostname,"\n",service.ipaddr,"\n")
+	service := Host{serviceHostname, serviceIP}
+	fmt.Println("Your service host is:\n", service.hostname, "\n", service.ipaddr, "\n")
 
 	// Get bootstrap information. Manual input.
 	var bootstrap Host
 	fmt.Print("Enter your bootstrap node's information: ")
-	bootstrap.hostname = input_hostname()
-	bootstrap.ipaddr = input_ipaddr()
+	bootstrap.hostname = inputHostname()
+	bootstrap.ipaddr = inputIPAddr()
 
 	// Acquire master information. Quantity and details. Manual input.
 	fmt.Println("\n\n=== Masters ===")
-	var master_count int
+	var masterCount int
 	for {
 		fmt.Print("Enter number of masters: ")
-		_, err := fmt.Scanf("%d", &master_count)
-		if err == nil || master_count < 1 {
+		_, err := fmt.Scanf("%d", &masterCount)
+		if err == nil || masterCount < 1 {
 			break
 		} else {
 			fmt.Println("Invalid input detected.")
 		}
 	}
-	masters := node_details(master_count)
+	masters := nodeDetails(masterCount)
 	fmt.Println(masters)
 
 	fmt.Println("\n\n=== Workers ===")
-	var worker_count int
+	var workerCount int
 	for {
 		fmt.Print("Enter number of workers: ")
-		_, err := fmt.Scanf("%d", &worker_count)
+		_, err := fmt.Scanf("%d", &workerCount)
 		if err == nil {
 			break
 		} else {
 			fmt.Println("Invalid input detected.")
 		}
 	}
-	workers := node_details(worker_count)
+	workers := nodeDetails(workerCount)
 	fmt.Println(workers)
 
-	haproxy_gen(bootstrap, masters, workers)
-	bind_gen_subdomain(domain, cluster, service, bootstrap, masters, workers)
-	bind_gen_subnet(domain, cluster, service, bootstrap, masters, workers)
-	bind_named_conf_gen(service)
-	bind_named_conf_local_gen(domain, service)
+	// haproxy_gen(bootstrap, masters, workers)
+	// bind_gen_subdomain(domain, cluster, service, bootstrap, masters, workers)
+	// bind_gen_subnet(domain, cluster, service, bootstrap, masters, workers)
+	// bind_named_conf_gen(service)
+	// bind_named_conf_local_gen(domain, service)
 }

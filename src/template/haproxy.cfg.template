@@ -50,6 +50,10 @@ backend okd4_k8s_api_be
     balance source
     mode tcp
     # okd4_k8s_api_be nodes
+    {{.Bootstrap}}
+    {{ range .}}
+    server      {{ .Hostname }} {{ .Ipaddr }}:6443 check\n
+    {{ end }}
 
 frontend okd4_machine_config_server_fe
     bind :22623
@@ -61,6 +65,10 @@ backend okd4_machine_config_server_be
     balance source
     mode tcp
     # okd4_machine_config_server_be nodes
+    {{.Bootstrap}}
+    {{ range .}}
+    server      {{ .Hostname }} {{ .Ipaddr }}:6443 check\n
+    {{ end }}
 
 frontend okd4_http_ingress_traffic_fe
     bind :80
