@@ -10,8 +10,8 @@ import (
 
 // Host is a representation of a Node, be it service, bootstrap, master, or compute
 type Host struct {
-	hostname string
-	ipaddr   string
+	Hostname string
+	Ipaddr   string
 }
 
 // Automatically detect the network devices and IP addresses of the host.
@@ -79,8 +79,8 @@ func nodeDetails(nodeCount int) []Host {
 		}
 		fmt.Println("Enter your node's information.")
 		var host Host
-		host.hostname = inputHostname()
-		host.ipaddr = inputIPAddr()
+		host.Hostname = inputHostname()
+		host.Ipaddr = inputIPAddr()
 		nodes = append(nodes, host)
 	}
 	return nodes

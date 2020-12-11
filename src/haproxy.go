@@ -9,13 +9,14 @@ import (
 
 //HAProxyInfo is ...
 type HAProxyInfo struct {
-	Bootstrap Host
-	Masters   []Host
-	Workers   []Host
+	Bootstrap        Host
+	Masters          []Host
+	Workers          []Host
+	MastersAsWorkers bool
 }
 
 // Generate an haproxy config file.
-func generateHAProxyConfig(bootstrap Host, masters []Host, workers []Host) {
+func generateHAProxyConfig(bootstrap Host, masters []Host, workers []Host, mastersAsWorkers bool) {
 	input, err := ioutil.ReadFile("template/haproxy.cfg.template")
 	if err != nil {
 		fmt.Println(err)
@@ -25,6 +26,7 @@ func generateHAProxyConfig(bootstrap Host, masters []Host, workers []Host) {
 		bootstrap,
 		masters,
 		workers,
+		mastersAsWorkers,
 	}
 
 	/*
@@ -37,19 +39,11 @@ func generateHAProxyConfig(bootstrap Host, masters []Host, workers []Host) {
 	*/
 
 	haproxyTemplate := template.Must(template.New("").Parse(string(input)))
-	// nodes := []Host{Host{"host1", "1.1.1.1"}, Host{"host2", "1.1.1.2"}, Host{"host3", "1.1.1.3"}}
-
-	//nodeNames := []string{}
-	//nodeIPs := []string{}
-	//for _,node := range nodes {
-	//	nodeNames = append(nodeNames, node.Hostname)
-	//	nodeIPs = append(nodeIPs, node.ipaddr)
-	//}
-	//fmt.Println(nodeNames)
 
 	os.MkdirAll("output", os.ModePerm)
-	f, err := os.Create("output/haproxy.cfg")
-	haproxyTemplate.Execute(f, info)
+	// f, err := os.Create("output/haproxy.cfg")
+	fmt.Println("I am outputting!!!!!")
+	haproxyTemplate.Execute(os.Stdout, info)
 
 	// err = ioutil.WriteFile("output/haproxy.cfg", []byte(output), 0644)
 	if err != nil {
