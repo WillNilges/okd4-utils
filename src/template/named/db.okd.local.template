@@ -1,5 +1,7 @@
+{{- $cluster := .Cluster }}
+{{- $domain := .Domain }}
 $TTL    604800
-@       IN      SOA     okd4-services.{domain}. admin.{domain}. (
+@       IN      SOA     okd4-services.{{ $domain }}. admin.{{ $domain }}. (
                   1     ; Serial
              604800     ; Refresh
               86400     ; Retry
@@ -11,21 +13,23 @@ $TTL    604800
     IN      NS      okd4-services
 
 ; name servers - A records
-okd4-services.{domain}.          IN      A       {services-ip}
+okd4-services.{{ $domain }}.          IN      A       {{ .Services.Ipaddr }}
 
 ; OpenShift Container Platform Cluster - A records
-okd4-bootstrap.{sub-domain}.{domain}.        IN      A      {bootstrap-ip}
-okd4-master-{master-index}.{sub-domain}.{domain}.        IN      A      {master-ip}
-okd4-worker-{worker-index}.{sub-domain}.{domain}.        IN      A      {worker-ip}
-
-
+okd4-bootstrap.{{ $cluster }}.{{ $domain }}.        IN      A      {{ .Bootstrap.Ipaddr }}
+{{ range .Masters }}{{ .Hostname }}.{{ $cluster }}.{{ $domain }}.        IN      A      {{ .Ipaddr }}
+{{ end }}
+{{ range .Workers }}{{ .Hostname }}.{{ $cluster }}.{{ $domain }}.        IN      A      {{ .Ipaddr }}
+{{ end }} 
 ; OpenShift internal cluster IPs - A records
-api.{sub-domain}.{domain}.    IN    A    {services-ip}
-api-int.{sub-domain}.{domain}.    IN    A    {services-ip}
-*.apps{sub-domain}.{domain}.    IN    A    {services-ip}
-etcd-{master-index}.{sub-domain}.{domain}.    IN    A     {master-ip}
-console-openshift-console.apps.{sub-domain}.{domain}.     IN     A     {services-ip}
-oauth-openshift.apps.{sub-domain}.{domain}.     IN     A     {services-ip}
+api.{{ $cluster }}.{{ $domain }}.    IN    A    {{ .Services.Ipaddr }}
+api-int.{{ $cluster }}.{{ $domain }}.    IN    A    {{ .Services.Ipaddr }}
+*.apps{{ $cluster }}.{{ $domain }}.    IN    A    {{ .Services.Ipaddr }}
+{{ range $i, $node := .Masters }}etcd-{{ $i }}.{{ $cluster }}.{{ $domain }}.    IN    A     {{ $node.Ipaddr }}
+{{ end }}
+console-openshift-console.apps.{{ $cluster }}.{{ $domain }}.     IN     A     {{ .Services.Ipaddr }}
+oauth-openshift.apps.{{ $cluster }}.{{ $domain }}.     IN     A     {{ .Services.Ipaddr }}
 
 ; OpenShift internal cluster IPs - SRV records
-_etcd-server-ssl._tcp.{sub-domain}.{domain}.    86400     IN    SRV     0    10    2380    etcd-{master-index}.{sub-domain}
+{{ range $i, $node := .Masters}} _etcd-server-ssl._tcp.{{ $cluster }}.{{ $domain }}.    86400     IN    SRV     0    10    2380    etcd-{{ $i }}.{{ $cluster }}
+{{ end }}

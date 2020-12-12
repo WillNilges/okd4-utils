@@ -1,5 +1,9 @@
+{{- $cluster := .Cluster }}
+{{- $domain := .Domain }}
+{{- $masters24 := .Masters24 }}
+{{- $workers24 := .Workers24 }}
 $TTL    604800
-@       IN      SOA     okd4-services.{domain}. admin.{domain}. (
+@       IN      SOA     okd4-services.{{ $domain }}. admin.{{ $domain }}. (
                   6     ; Serial
              604800     ; Refresh
               86400     ; Retry
@@ -11,11 +15,13 @@ $TTL    604800
     IN      NS      okd4-services
 
 ; name servers - PTR records
-{services-ip24}    IN    PTR    okd4-services.{domain}.
+{{ .Services24 }}    IN    PTR    okd4-services.{{ $domain }}.
 
 ; OpenShift Container Platform Cluster - PTR records
-{bootstrap-ip24}    IN    PTR    {bootstrap-name}.{sub-domain}.{domain}.
-{master-ip24}    IN    PTR    {master-name}.{sub-domain}.{domain}.
-{worker-ip24}    IN    PTR    {worker-name}.{sub-domain}.{domain}.
-{services-ip24}    IN    PTR    api.{sub-domain}.{domain}.
-{services-ip24}    IN    PTR    api-int.{sub-domain}.{domain}.
+{{ .Bootstrap24 }}    IN    PTR    {{ .Bootstrap.Hostname }}.{{ $cluster }}.{{ $domain }}.
+{{ range $i, $node := .Masters }}{{ index $masters24 $i }}    IN    PTR    {{ $node.Hostname }}.{{ $cluster }}.{{ $domain }}.
+{{ end }}
+{{ range $i, $node := .Workers }}{{ index $workers24 $i }}    IN    PTR    {{ $node.Hostname }}.{{ $cluster }}.{{ $domain }}.
+{{ end }}
+{{ .Services24 }}    IN    PTR    api.{{ $cluster }}.{{ $domain }}.
+{{ .Services24 }}    IN    PTR    api-int.{{ $cluster }}.{{ $domain }}.
