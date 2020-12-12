@@ -49,7 +49,9 @@ frontend okd4_k8s_api_fe
 backend okd4_k8s_api_be
     balance source
     mode tcp
-    # okd4_k8s_api_be nodes
+    server      {{ .Bootstrap.Hostname }} {{ .Bootstrap.Ipaddr }}:6443 check
+    {{ range .Masters }}server      {{ .Hostname }} {{ .Ipaddr }}:6443 check
+    {{ end }}
 
 frontend okd4_machine_config_server_fe
     bind :22623
@@ -60,7 +62,9 @@ frontend okd4_machine_config_server_fe
 backend okd4_machine_config_server_be
     balance source
     mode tcp
-    # okd4_machine_config_server_be nodes
+    server      {{ .Bootstrap.Hostname }} {{ .Bootstrap.Ipaddr }}:22623 check
+    {{ range .Masters }}server      {{ .Hostname }} {{ .Ipaddr }}:22623 check
+    {{ end }}
 
 frontend okd4_http_ingress_traffic_fe
     bind :80
@@ -71,7 +75,12 @@ frontend okd4_http_ingress_traffic_fe
 backend okd4_http_ingress_traffic_be
     balance source
     mode tcp
-    # okd4_http_ingress_traffic_be nodes
+    {{ if .MastersAsWorkers }}
+    {{- range .Masters }}server      {{ .Hostname }} {{ .Ipaddr }}:80 check
+    {{ end -}}
+    {{ end -}}
+    {{ range .Workers }}server      {{ .Hostname }} {{ .Ipaddr }}:80 check
+    {{ end }}
 
 frontend okd4_https_ingress_traffic_fe
     bind *:443
@@ -82,4 +91,9 @@ frontend okd4_https_ingress_traffic_fe
 backend okd4_https_ingress_traffic_be
     balance source
     mode tcp
-    # okd4_https_ingress_traffic_be nodes
+    {{ if .MastersAsWorkers }}
+    {{- range .Masters }}server      {{ .Hostname }} {{ .Ipaddr }}:443 check
+    {{ end -}}
+    {{ end -}}
+    {{ range .Workers }}server      {{ .Hostname }} {{ .Ipaddr }}:443 check
+    {{ end }}

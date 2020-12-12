@@ -2,6 +2,18 @@ package main
 
 import "fmt"
 
+// func main() {
+// 	services := Host{"boot", "1.0.69.101"}
+// 	bootstrap := Host{"boot", "1.0.1.102"}
+// 	masters := []Host{Host{"host1", "1.1.1.111"}, Host{"host2", "1.1.1.112"}, Host{"host3", "1.1.1.113"}}
+// 	workers := []Host{Host{"work1", "1.2.1.111"}, Host{"work2", "1.2.1.112"}, Host{"work3", "1.2.1.113"}}
+
+// 	generateOkdDomainBindConfig("postave.us", "willard_cluster", services, bootstrap, masters, workers)
+// 	generateSubnetBindConfig("postave.us", "willard_cluster", services, bootstrap, masters, workers)
+// 	generateLocalBindConfig("postave.us", services)
+// 	generateBindConfig(services)
+// }
+
 func main() {
 	fmt.Println("Welcome to QuickShift") // Working title.
 	fmt.Println("This program is designed to make it easier to configure an OpenShift cluster by automatically configuring your services machine, DNS config files, and HAProxy config file.")
@@ -14,62 +26,79 @@ func main() {
 	var cluster string
 	fmt.Print("\n\nEnter your cluster name: ")
 	fmt.Scanln(&cluster)
-  
+
 	// Acquire network details of the service machine. Auto-detects devices and IP addresses.
 	fmt.Println("\n\nAcquiring service host networking information...")
 
 	// Get service machine IP
-	service_ip, err := choose_IP()
+	serviceIP, err := chooseIP()
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	// Get service machine hostnames 
-	service_hostname, err := get_hostname()
+	// Get service machine hostnames
+	serviceHostname, err := getHostname()
 	if err != nil {
 		fmt.Println(err)
 	}
-	service := Host{ service_hostname, service_ip }
-	fmt.Println("Your service host is:\n",service.hostname,"\n",service.ipaddr,"\n")
+	service := Host{serviceHostname, serviceIP}
+	fmt.Println("Your service host is:\n", service.Hostname, "\n", service.Ipaddr, "\n")
 
 	// Get bootstrap information. Manual input.
 	var bootstrap Host
 	fmt.Print("Enter your bootstrap node's information: ")
-	bootstrap.hostname = input_hostname()
-	bootstrap.ipaddr = input_ipaddr()
+	bootstrap.Hostname = inputHostname()
+	bootstrap.Ipaddr = inputIPAddr()
 
 	// Acquire master information. Quantity and details. Manual input.
 	fmt.Println("\n\n=== Masters ===")
-	var master_count int
+
+	var mastersAsWorkersS string
+	var mastersAsWorkers bool
 	for {
-		fmt.Print("Enter number of masters: ")
-		_, err := fmt.Scanf("%d", &master_count)
-		if err == nil || master_count < 1 {
+		fmt.Print("Would you like to use masters as workers (y/n)? ")
+		_, err := fmt.Scanf("%s", &mastersAsWorkersS)
+		if err == nil && mastersAsWorkersS == "y" {
+			mastersAsWorkers = true
+			break
+		} else if err == nil && mastersAsWorkersS == "y" {
+			mastersAsWorkers = false
 			break
 		} else {
 			fmt.Println("Invalid input detected.")
 		}
 	}
-	masters := node_details(master_count)
+
+	var masterCount int
+	for {
+		fmt.Print("Enter number of masters: ")
+		_, err := fmt.Scanf("%d", &masterCount)
+		if err == nil || masterCount < 1 {
+			break
+		} else {
+			fmt.Println("Invalid input detected.")
+		}
+	}
+	masters := nodeDetails(masterCount)
 	fmt.Println(masters)
 
 	fmt.Println("\n\n=== Workers ===")
-	var worker_count int
+	var workerCount int
 	for {
 		fmt.Print("Enter number of workers: ")
-		_, err := fmt.Scanf("%d", &worker_count)
+		_, err := fmt.Scanf("%d", &workerCount)
 		if err == nil {
 			break
 		} else {
 			fmt.Println("Invalid input detected.")
 		}
 	}
-	workers := node_details(worker_count)
+	workers := nodeDetails(workerCount)
 	fmt.Println(workers)
 
-	haproxy_gen(bootstrap, masters, workers)
-	bind_gen_subdomain(domain, cluster, service, bootstrap, masters, workers)
-	bind_gen_subnet(domain, cluster, service, bootstrap, masters, workers)
-	bind_named_conf_gen(service)
-	bind_named_conf_local_gen(domain, service)
+	generateHAProxyConfig(bootstrap, masters, workers, mastersAsWorkers)
+	generateOkdDomainBindConfig(domain, cluster, service, bootstrap, masters, workers)
+	generateSubnetBindConfig(domain, cluster, service, bootstrap, masters, workers)
+	generateLocalBindConfig(domain, service)
+	generateBindConfig(service)
 }

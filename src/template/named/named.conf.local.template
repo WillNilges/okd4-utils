@@ -1,0 +1,9 @@
+zone "{{ .Domain }}" {
+    type master;
+    file "/etc/named/zones/db.{{ .Domain }}"; # zone file path
+};
+
+zone "{{ .SubnetReverse }}.in-addr.arpa" {
+    type master;
+    file "/etc/named/zones/db.{{ .Subnet }}";  # {{ .Subnet }}.0/24 subnet
+};

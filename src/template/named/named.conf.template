@@ -10,7 +10,7 @@
 // configuration located in /usr/share/doc/bind-{version}/Bv9ARM.html
 
 options {
-	listen-on port 53 { 127.0.0.1; {services-ip}; };
+	listen-on port 53 { 127.0.0.1; {{ .Services.Ipaddr }}; };
 #	listen-on-v6 port 53 { ::1; };
 	directory 	"/var/named";
 	dump-file 	"/var/named/data/cache_dump.db";
@@ -18,7 +18,7 @@ options {
 	memstatistics-file "/var/named/data/named_mem_stats.txt";
 	recursing-file  "/var/named/data/named.recursing";
 	secroots-file   "/var/named/data/named.secroots";
-	allow-query     { localhost; {subnet}.0/24; };
+	allow-query     { localhost; {{ .Subnet }}.0/24; };
 
 	/* 
 	 - If you are building an AUTHORITATIVE DNS server, do NOT enable recursion.
@@ -64,4 +64,3 @@ zone "." IN {
 include "/etc/named.rfc1912.zones";
 include "/etc/named.root.key";
 include "/etc/named/named.conf.local";
-

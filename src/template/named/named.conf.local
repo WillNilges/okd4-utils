@@ -1,9 +1,0 @@
-zone "{domain}" {
-    type master;
-    file "/etc/named/zones/db.{domain}"; # zone file path
-};
-
-zone "{subnet-reverse}.in-addr.arpa" {
-    type master;
-    file "/etc/named/zones/db.{subnet}";  # {subnet}.0/24 subnet
-};

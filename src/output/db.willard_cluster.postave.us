@@ -1,0 +1,28 @@
+
+$TTL    604800
+@       IN      SOA     okd4-services.postave.us. admin.postave.us. (
+                  6     ; Serial
+             604800     ; Refresh
+              86400     ; Retry
+            2419200     ; Expire
+             604800     ; Negative Cache TTL
+)
+
+; name servers - NS records
+    IN      NS      okd4-services
+
+; name servers - PTR records
+101    IN    PTR    okd4-services.postave.us.
+
+; OpenShift Container Platform Cluster - PTR records
+102    IN    PTR    boot.willard_cluster.postave.us.
+111    IN    PTR    host1.willard_cluster.postave.us.
+112    IN    PTR    host2.willard_cluster.postave.us.
+113    IN    PTR    host3.willard_cluster.postave.us.
+
+111    IN    PTR    work1.willard_cluster.postave.us.
+112    IN    PTR    work2.willard_cluster.postave.us.
+113    IN    PTR    work3.willard_cluster.postave.us.
+
+101    IN    PTR    api.willard_cluster.postave.us.
+101    IN    PTR    api-int.willard_cluster.postave.us.

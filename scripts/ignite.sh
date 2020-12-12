@@ -2,12 +2,12 @@
 
 # Use ydotool to type in the ignition information. Screw doing that by hand!
 
-NODE_TYPE=bootstrap # bootstrap, or master, or worker
-#NODE_TYPE=master
+#NODE_TYPE=bootstrap # bootstrap, or master, or worker
+NODE_TYPE=master
 #NODE_TYPE=worker
 NODE_IP= # If you don't have Static DHCP
 
-SERVICES= # This must be specified.
+SERVICES=129.21.49.25 # This must be specified.
 NAMESERVER=
 NODE_ROUTE=
 NODE_MASK=255.255.255.0
