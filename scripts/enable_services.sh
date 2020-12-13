@@ -57,7 +57,7 @@ firewall-cmd --permanent --add-service=https
 firewall-cmd --reload
 
 # Configure httpd
-sed -i 's/Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
+sed -i 's/Listen 80\n/Listen 8080\n/' /etc/httpd/conf/httpd.conf
 
 setsebool -P httpd_read_user_content 1
 systemctl enable httpd
@@ -129,5 +129,7 @@ sudo mv fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz fcos.raw.xz
 sudo mv fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz.sig fcos.raw.xz.sig
 sudo chown -R apache: /var/www/html/
 sudo chmod -R 755 /var/www/html/
+
+echo '== READY FOR IGNITION =='
 
 exit 0

@@ -7,7 +7,7 @@ NODE_TYPE=master
 #NODE_TYPE=worker
 NODE_IP= # If you don't have Static DHCP
 
-SERVICES=129.21.49.25 # This must be specified.
+SERVICES= # This must be specified.
 NAMESERVER=
 NODE_ROUTE=
 NODE_MASK=255.255.255.0

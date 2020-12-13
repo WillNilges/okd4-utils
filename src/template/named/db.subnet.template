@@ -12,7 +12,7 @@ $TTL    604800
 )
 
 ; name servers - NS records
-    IN      NS      okd4-services
+    IN      NS      okd4-services.{{ $domain }
 
 ; name servers - PTR records
 {{ .Services24 }}    IN    PTR    okd4-services.{{ $domain }}.

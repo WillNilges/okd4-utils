@@ -24,12 +24,12 @@ okd4-bootstrap.{{ $cluster }}.{{ $domain }}.        IN      A      {{ .Bootstrap
 ; OpenShift internal cluster IPs - A records
 api.{{ $cluster }}.{{ $domain }}.    IN    A    {{ .Services.Ipaddr }}
 api-int.{{ $cluster }}.{{ $domain }}.    IN    A    {{ .Services.Ipaddr }}
-*.apps{{ $cluster }}.{{ $domain }}.    IN    A    {{ .Services.Ipaddr }}
+*.apps.{{ $cluster }}.{{ $domain }}.    IN    A    {{ .Services.Ipaddr }}
 {{ range $i, $node := .Masters }}etcd-{{ $i }}.{{ $cluster }}.{{ $domain }}.    IN    A     {{ $node.Ipaddr }}
 {{ end }}
 console-openshift-console.apps.{{ $cluster }}.{{ $domain }}.     IN     A     {{ .Services.Ipaddr }}
 oauth-openshift.apps.{{ $cluster }}.{{ $domain }}.     IN     A     {{ .Services.Ipaddr }}
 
 ; OpenShift internal cluster IPs - SRV records
-{{ range $i, $node := .Masters}} _etcd-server-ssl._tcp.{{ $cluster }}.{{ $domain }}.    86400     IN    SRV     0    10    2380    etcd-{{ $i }}.{{ $cluster }}
+{{ range $i, $node := .Masters}}_etcd-server-ssl._tcp.{{ $cluster }}.{{ $domain }}.    86400     IN    SRV     0    10    2380    etcd-{{ $i }}.{{ $cluster }}
 {{ end }}
