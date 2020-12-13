@@ -64,7 +64,7 @@ func generateOkdDomainBindConfig(domain string, cluster string, services Host, b
 	haproxyTemplate := template.Must(template.New("").Parse(string(input)))
 
 	os.MkdirAll("output", os.ModePerm)
-	f, err := os.Create(fmt.Sprintf("output/db.%s.%s", cluster, domain))
+	f, err := os.Create(fmt.Sprintf("output/db.%s", domain))
 	haproxyTemplate.Execute(f, info)
 	// haproxyTemplate.Execute(os.Stdout, info) // DEBUG
 }
@@ -101,8 +101,10 @@ func generateSubnetBindConfig(domain string, cluster string, services Host, boot
 
 	haproxyTemplate := template.Must(template.New("").Parse(string(input)))
 
+	subnet := strings.Join(strings.Split(services.Ipaddr, ".")[0:3], ".")
+
 	os.MkdirAll("output", os.ModePerm)
-	f, err := os.Create(fmt.Sprintf("output/db.%s.%s", cluster, domain))
+	f, err := os.Create(fmt.Sprintf("output/db.%s", subnet))
 	haproxyTemplate.Execute(f, info)
 	// haproxyTemplate.Execute(os.Stdout, info) // DEBUG
 }
