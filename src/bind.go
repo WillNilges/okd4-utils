@@ -156,7 +156,7 @@ func generateBindConfig(services Host) {
 	haproxyTemplate := template.Must(template.New("").Parse(string(input)))
 
 	os.MkdirAll("output", os.ModePerm)
-	f, err := os.Create("output/named.conf.local")
+	f, err := os.Create("output/named.conf")
 	haproxyTemplate.Execute(f, info)
 	// haproxyTemplate.Execute(os.Stdout, info) // DEBUG
 }
