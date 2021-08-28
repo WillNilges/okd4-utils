@@ -1,6 +1,14 @@
 #!/bin/bash
 
-echo "ARE YOU SURE YOU WANT TO DO THIS?"
+# This script is used to stand up a fresh okd4-services node. This node will handle HAProxy, named, and httpd services for the OKD setup process. Basically, modify the supplied configuration files, then run this script. It'll configure all the ports, install all the things, and copy all the files. When it's done, it'll print "==READY FOR IGNITION==" When you see that, use the ignite.sh script to write your ignition nodes.
+
+# See https://getfedora.org/en/coreos/download?tab=metal_virtualized&stream=stable for new versions.
+COREOS_VERSION="32.20201018.3.0"
+
+# See https://github.com/openshift/okd/releases/ for the most up to date info.
+OKD_VERSION="4.7.0-0.okd-2021-08-22-163618"
+
+echo "ARE YOU SURE YOU WANT TO DO THIS? (press Enter if you do, ^C if you don't.)"
 read
 
 set -e
@@ -67,10 +75,8 @@ firewall-cmd --reload
 
 curl localhost:8080
 
-# Install OKD 4.5
+# Install OKD 4
 cd
-# See https://github.com/openshift/okd/releases/ for the most up to date info.
-OKD_VERSION="4.6.0-0.okd-2020-11-27-200126"
 OKD_CLIENT_LINUX="https://github.com/openshift/okd/releases/download/$OKD_VERSION/openshift-client-linux-$OKD_VERSION.tar.gz"
 OKD_LINUX="https://github.com/openshift/okd/releases/download/$OKD_VERSION/openshift-install-linux-$OKD_VERSION.tar.gz"
 
@@ -118,9 +124,9 @@ chmod -R 755 /var/www/html/
 
 curl localhost:8080/okd4/metadata.json
 
-cd /var/www/html/okd4/
+# Acquire and set up Fedora CoreOS ISOs and prepare for Ignition.
 
-COREOS_VERSION="32.20201018.3.0"
+cd /var/www/html/okd4/
 
 sudo wget https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/$COREOS_VERSION/x86_64/fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz
 sudo wget https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/$COREOS_VERSION/x86_64/fedora-coreos-$COREOS_VERSION-metal.x86_64.raw.xz.sig
